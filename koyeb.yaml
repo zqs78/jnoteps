@@ -11,11 +11,11 @@ services:
     min: 1
     max: 1
   healthcheck:
-    path: /
+    path: /health  # 关键修改：从根路径"/"改为明确的健康检查端点"/health"
     port: 8000
     protocol: HTTP
-    initial_delay: 30  # 初始延迟30秒后开始检查
-    period: 10         # 关键修改：检查周期从15秒缩短为10秒
+    initial_delay: 30
+    period: 10
     timeout: 5
     success_threshold: 1
     failure_threshold: 3
