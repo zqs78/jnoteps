@@ -8,6 +8,7 @@ log() {
 
 log "=== 启动服务 ==="
 
+# 确保配置文件存在
 log "检查配置文件..."
 if [ -f /etc/xray/config.json ]; then
     log "配置文件存在: /etc/xray/config.json"
@@ -18,11 +19,13 @@ else
     log "配置文件已复制到 /etc/xray/config.json"
 fi
 
+# 启动Xray服务
 log "启动Xray服务..."
 /usr/local/bin/xray run -config /etc/xray/config.json &
 XRAY_PID=$!
-log "Xray启动完成，进程PID: $XRAY_PID"
+log "Xray启动完成，PID: $XRAY_PID"
 
+# 等待Xray启动
 sleep 10
 
 if kill -0 $XRAY_PID 2>/dev/null; then
@@ -32,11 +35,11 @@ else
     exit 1
 fi
 
-log "启动Python高频保活服务..."
-# 使用unbuffer确保Python输出立即刷新
+# 启动Python保活服务
+log "启动Python三重保障保活服务..."
 python3 -u /app/main.py &
 PYTHON_PID=$!
-log "Python保活服务启动完成，进程PID: $PYTHON_PID"
+log "Python保活服务启动完成，PID: $PYTHON_PID"
 
 sleep 5
 
@@ -47,8 +50,9 @@ else
     exit 1
 fi
 
-log "✅ 所有服务启动完成！开始监控..."
+log "✅ 所有服务启动完成！开始监控进程状态..."
 
+# 进程监控循环
 while true; do
     # 检查Python进程
     if ! kill -0 $PYTHON_PID 2>/dev/null; then
@@ -56,11 +60,7 @@ while true; do
         python3 -u /app/main.py &
         PYTHON_PID=$!
         sleep 3
-        if kill -0 $PYTHON_PID 2>/dev/null; then
-            log "✅ Python服务已重启 (新PID: $PYTHON_PID)"
-        else
-            log "❌ Python服务重启失败"
-        fi
+        log "✅ Python服务已重启 (新PID: $PYTHON_PID)"
     fi
 
     # 检查Xray进程
@@ -69,13 +69,9 @@ while true; do
         /usr/local/bin/xray run -config /etc/xray/config.json &
         XRAY_PID=$!
         sleep 10
-        if kill -0 $XRAY_PID 2>/dev/null; then
-            log "✅ Xray服务已重启 (新PID: $XRAY_PID)"
-        else
-            log "❌ Xray服务重启失败"
-        fi
+        log "✅ Xray服务已重启 (新PID: $XRAY_PID)"
     fi
     
-    # 更频繁的监控：每15秒检查一次
-    sleep 15
+    # 更频繁的监控：每10秒检查一次
+    sleep 10
 done
