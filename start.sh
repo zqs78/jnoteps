@@ -21,9 +21,9 @@ sleep 10
 
 # 检查Xray是否成功启动
 if kill -0 $XRAY_PID 2>/dev/null; then
-    log "✅ Xray启动成功，PID: $XRAY_PID"
+    log "Xray启动成功，PID: $XRAY_PID"
 else
-    log "❌ Xray启动失败，检查配置..."
+    log "Xray启动失败，检查配置..."
     # 显示Xray启动错误
     /usr/local/bin/xray run -config /etc/xray/config.json
     exit 1
@@ -39,32 +39,32 @@ log "Python保活服务启动完成，进程PID: $PYTHON_PID"
 sleep 5
 
 if kill -0 $PYTHON_PID 2>/dev/null; then
-    log "✅ Python保活服务启动成功。"
+    log "Python保活服务启动成功。"
 else
-    log "❌ Python保活服务启动失败。"
+    log "Python保活服务启动失败。"
     exit 1
 fi
 
-log "✅ 所有服务启动完成！开始监控进程状态..."
+log "所有服务启动完成！开始监控进程状态..."
 
 # 简单的进程监控循环
 while true; do
     # 检查Python进程
     if ! kill -0 $PYTHON_PID 2>/dev/null; then
-        log "❌ Python进程异常退出，重启中..."
+        log "Python进程异常退出，重启中..."
         python3 /app/main.py &
         PYTHON_PID=$!
         sleep 3
-        log "✅ Python服务已重启 (新PID: $PYTHON_PID)"
+        log "Python服务已重启 (新PID: $PYTHON_PID)"
     fi
 
     # 检查Xray进程
     if ! kill -0 $XRAY_PID 2>/dev/null; then
-        log "❌ Xray进程异常退出，重启中..."
+        log "Xray进程异常退出，重启中..."
         /usr/local/bin/xray run -config /etc/xray/config.json &
         XRAY_PID=$!
         sleep 10
-        log "✅ Xray服务已重启 (新PID: $XRAY_PID)"
+        log "Xray服务已重启 (新PID: $XRAY_PID)"
     fi
     
     # 每隔30秒检查一次进程状态
