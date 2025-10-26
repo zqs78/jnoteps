@@ -16,7 +16,7 @@ sys.stderr.flush()
 # 配置参数
 CONFIG = {
     "domain": "01.proxy.koyeb.app",
-    "port": "17893",
+    "port": "20018",
     "uuid": "258751a7-eb14-47dc-8d18-511c3472220f",
     "internal_port": 8000,
     "health_check_interval": 25,
