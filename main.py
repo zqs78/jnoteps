@@ -17,7 +17,7 @@ sys.stderr.flush()
 
 CONFIG = {
     "domain": "01.proxy.koyeb.app",
-    "port": "20018",
+    "port": "20018",  # Koyeb代理端口
     "uuid": "258751a7-eb14-47dc-8d18-511c3472220f",
     "internal_port": 8000,
     "user_agents": [
@@ -42,143 +42,136 @@ def log_message(message):
 # 三种精美的仿真页面模板
 SIMULATED_PAGES = [
     {
-        "title": "服务状态监控",
+        "title": "服务状态监控中心",
         "content": """
         <div class="status-container">
-            <h2>🔄 服务状态监控</h2>
-            <div class="status-item">
-                <span class="status-label">服务状态:</span>
-                <span class="status-value online">正常运行</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">最后更新:</span>
-                <span class="status-value">{timestamp}</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">请求统计:</span>
-                <span class="status-value">{requests} 次访问</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">运行时间:</span>
-                <span class="status-value">{uptime}</span>
+            <h2>🔄 服务状态监控中心</h2>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-icon">✅</div>
+                    <div class="status-info">
+                        <div class="status-label">服务状态</div>
+                        <div class="status-value online">正常运行</div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">📊</div>
+                    <div class="status-info">
+                        <div class="status-label">请求统计</div>
+                        <div class="status-value">{requests} 次访问</div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">⏱️</div>
+                    <div class="status-info">
+                        <div class="status-label">运行时间</div>
+                        <div class="status-value">{uptime}</div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">🔄</div>
+                    <div class="status-info">
+                        <div class="status-label">最后更新</div>
+                        <div class="status-value">{timestamp}</div>
+                    </div>
+                </div>
             </div>
         </div>
         """,
         "style": """
-        .status-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 50px auto;
+        .status-container { max-width: 900px; margin: 50px auto; padding: 30px; }
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .status-card { 
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; 
+            align-items: center; transition: transform 0.3s; 
         }
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            font-size: 1.1em;
-        }
-        .status-label {
-            font-weight: bold;
-            color: #495057;
-        }
-        .status-value {
-            color: #212529;
-        }
-        .online {
-            color: #28a745;
-            font-weight: bold;
-        }
+        .status-card:hover { transform: translateY(-5px); }
+        .status-icon { font-size: 2.5em; margin-right: 20px; }
+        .status-info { flex: 1; }
+        .status-label { font-size: 0.9em; color: #666; margin-bottom: 5px; }
+        .status-value { font-size: 1.3em; font-weight: bold; color: #333; }
+        .online { color: #28a745; }
         """
     },
     {
-        "title": "系统监控面板",
+        "title": "系统性能监控面板",
         "content": """
         <div class="monitor-container">
-            <h2>📊 系统监控面板</h2>
-            <div class="metrics">
+            <h2>📊 系统性能监控面板</h2>
+            <div class="metrics-container">
                 <div class="metric">
-                    <div class="metric-title">CPU使用率</div>
-                    <div class="metric-bar">
-                        <div class="metric-fill" style="width: {cpu}%"></div>
+                    <div class="metric-header">
+                        <span class="metric-title">CPU使用率</span>
+                        <span class="metric-value">{cpu}%</span>
                     </div>
-                    <div class="metric-value">{cpu}%</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill cpu-fill" style="width: {cpu}%"></div>
+                    </div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">内存使用</div>
-                    <div class="metric-bar">
-                        <div class="metric-fill" style="width: {memory}%"></div>
+                    <div class="metric-header">
+                        <span class="metric-title">内存使用</span>
+                        <span class="metric-value">{memory}%</span>
                     </div>
-                    <div class="metric-value">{memory}%</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill memory-fill" style="width: {memory}%"></div>
+                    </div>
                 </div>
                 <div class="metric">
-                    <div class="metric-title">网络流量</div>
-                    <div class="metric-bar">
-                        <div class="metric-fill" style="width: {network}%"></div>
+                    <div class="metric-header">
+                        <span class="metric-title">网络流量</span>
+                        <span class="metric-value">{network}%</span>
                     </div>
-                    <div class="metric-value">{network}%</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill network-fill" style="width: {network}%"></div>
+                    </div>
                 </div>
             </div>
-            <div class="alerts">
-                <h3>系统告警</h3>
-                <div class="alert info">所有系统运行正常</div>
+            <div class="performance-stats">
+                <div class="stat">
+                    <div class="stat-number">{requests}</div>
+                    <div class="stat-label">总请求数</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99.8%</div>
+                    <div class="stat-label">服务可用率</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">{uptime}</div>
+                    <div class="stat-label">持续运行</div>
+                </div>
             </div>
         </div>
         """,
         "style": """
-        .monitor-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 700px;
-            margin: 50px auto;
+        .monitor-container { max-width: 800px; margin: 50px auto; padding: 30px; }
+        .metrics-container { margin: 30px 0; }
+        .metric { margin: 25px 0; }
+        .metric-header { 
+            display: flex; justify-content: space-between; 
+            margin-bottom: 10px; font-weight: bold; 
         }
-        .metrics {
-            margin: 30px 0;
+        .metric-bar { 
+            width: 100%; height: 12px; background: #f0f0f0; 
+            border-radius: 6px; overflow: hidden; 
         }
-        .metric {
-            margin: 20px 0;
+        .metric-fill { 
+            height: 100%; transition: width 0.5s; border-radius: 6px;
         }
-        .metric-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #495057;
+        .cpu-fill { background: linear-gradient(90deg, #ff6b6b, #ff8e8e); }
+        .memory-fill { background: linear-gradient(90deg, #4ecdc4, #88d3ce); }
+        .network-fill { background: linear-gradient(90deg, #45b7d1, #96cfe3); }
+        .performance-stats { 
+            display: flex; justify-content: space-around; 
+            margin-top: 40px; 
         }
-        .metric-bar {
-            width: 100%;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
+        .stat { text-align: center; }
+        .stat-number { 
+            font-size: 2.5em; font-weight: bold; color: #2c3e50; 
+            margin-bottom: 5px; 
         }
-        .metric-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            transition: width 0.5s;
-        }
-        .metric-value {
-            text-align: right;
-            margin-top: 5px;
-            color: #6c757d;
-        }
-        .alerts {
-            margin-top: 30px;
-        }
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        .alert.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 5px solid #0dcaf0;
-        }
+        .stat-label { color: #7f8c8d; font-size: 0.9em; }
         """
     },
     {
@@ -186,98 +179,79 @@ SIMULATED_PAGES = [
         "content": """
         <div class="api-container">
             <h2>🚀 API网关控制台</h2>
-            <div class="api-stats">
-                <div class="stat-card">
-                    <div class="stat-value">{requests}</div>
-                    <div class="stat-label">总请求数</div>
+            <div class="dashboard">
+                <div class="api-status">
+                    <h3>服务状态概览</h3>
+                    <div class="status-badges">
+                        <span class="badge success">网关服务: 运行中</span>
+                        <span class="badge success">健康检查: 通过</span>
+                        <span class="badge success">代理服务: 活跃</span>
+                        <span class="badge info">请求数: {requests}</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">{uptime}</div>
-                    <div class="stat-label">运行时间</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">99.8%</div>
-                    <div class="stat-label">可用率</div>
+                <div class="endpoints-list">
+                    <h3>可用API端点</h3>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/health</span>
+                        <span class="description">服务健康状态检查</span>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/stats</span>
+                        <span class="description">系统性能统计信息</span>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/version</span>
+                        <span class="description">服务版本信息</span>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <span class="path">/status</span>
+                        <span class="description">实时服务状态</span>
+                    </div>
                 </div>
             </div>
-            <div class="endpoints">
-                <h3>可用端点</h3>
-                <div class="endpoint">
-                    <span class="method">GET</span>
-                    <span class="path">/api/health</span>
-                    <span class="desc">服务健康检查</span>
-                </div>
-                <div class="endpoint">
-                    <span class="method">GET</span>
-                    <span class="path">/api/stats</span>
-                    <span class="desc">系统统计信息</span>
-                </div>
-                <div class="endpoint">
-                    <span class="method">GET</span>
-                    <span class="path">/api/version</span>
-                    <span class="desc">服务版本信息</span>
+            <div class="monitoring-data">
+                <div class="data-card">
+                    <h4>实时监控数据</h4>
+                    <ul>
+                        <li>当前时间: {timestamp}</li>
+                        <li>运行时长: {uptime}</li>
+                        <li>内存占用: {memory}%</li>
+                        <li>CPU负载: {cpu}%</li>
+                    </ul>
                 </div>
             </div>
         </div>
         """,
         "style": """
-        .api-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 800px;
-            margin: 50px auto;
+        .api-container { max-width: 1000px; margin: 50px auto; padding: 30px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .status-badges { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .badge { 
+            padding: 8px 15px; border-radius: 20px; font-size: 0.9em; 
+            font-weight: bold; 
         }
-        .api-stats {
-            display: flex;
-            justify-content: space-between;
-            margin: 30px 0;
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .endpoints-list { margin-top: 20px; }
+        .endpoint-item { 
+            display: flex; align-items: center; padding: 12px; 
+            background: #f8f9fa; margin: 8px 0; border-radius: 8px; 
         }
-        .stat-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            flex: 1;
-            margin: 0 10px;
+        .method { 
+            padding: 4px 10px; border-radius: 4px; font-weight: bold; 
+            margin-right: 15px; min-width: 50px; text-align: center; 
         }
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #0d6efd;
-        }
-        .stat-label {
-            color: #6c757d;
-            margin-top: 10px;
-        }
-        .endpoints {
-            margin-top: 30px;
-        }
-        .endpoint {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        .method {
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        .path {
-            font-family: monospace;
-            color: #0d6efd;
-            flex: 1;
-        }
-        .desc {
-            color: #6c757d;
-        }
+        .get { background: #61affe; color: white; }
+        .path { font-family: monospace; color: #0d6efd; flex: 1; }
+        .description { color: #6c757d; }
+        .monitoring-data { margin-top: 30px; }
+        .data-card { background: #f8f9fa; padding: 20px; border-radius: 10px; }
+        .data-card ul { list-style: none; padding: 0; }
+        .data-card li { padding: 5px 0; border-bottom: 1px solid #dee2e6; }
         """
     }
 ]
@@ -292,7 +266,9 @@ def generate_simulated_page():
     
     # 计算运行时间
     uptime_seconds = int(time.time() - start_time)
-    uptime_str = f"{uptime_seconds // 3600}小时{(uptime_seconds % 3600) // 60}分钟"
+    hours = uptime_seconds // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    uptime_str = f"{hours}小时{minutes}分钟"
     
     # 生成随机指标
     cpu_usage = random.randint(15, 45)
@@ -317,7 +293,7 @@ def generate_simulated_page():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{page_template["title"]}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
             * {{
                 box-sizing: border-box;
@@ -325,34 +301,47 @@ def generate_simulated_page():
                 padding: 0;
             }}
             body {{
-                font-family: 'Roboto', sans-serif;
+                font-family: 'Inter', sans-serif;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: #333;
+                color: #2d3748;
                 min-height: 100vh;
                 padding: 20px;
+                line-height: 1.6;
             }}
-            h1, h2, h3 {{
-                color: #343a40;
-                margin-bottom: 20px;
+            h1, h2, h3, h4 {{
+                color: #2d3748;
+                margin-bottom: 1rem;
+                font-weight: 600;
             }}
             h2 {{
-                font-size: 1.8rem;
-                border-bottom: 2px solid #e9ecef;
-                padding-bottom: 10px;
+                font-size: 2rem;
+                border-bottom: 2px solid #e2e8f0;
+                padding-bottom: 0.5rem;
+                margin-bottom: 2rem;
             }}
             {page_template["style"]}
             .footer {{
                 text-align: center;
-                margin-top: 40px;
-                color: rgba(255,255,255,0.7);
+                margin-top: 3rem;
+                color: rgba(255,255,255,0.8);
                 font-size: 0.9rem;
+                padding: 1rem;
+            }}
+            @media (max-width: 768px) {{
+                .status-grid, .dashboard {{
+                    grid-template-columns: 1fr;
+                }}
+                .performance-stats {{
+                    flex-direction: column;
+                    gap: 20px;
+                }}
             }}
         </style>
     </head>
     <body>
         {content}
         <div class="footer">
-            <p>自动生成页面 • {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>✨ 自动生成页面 • 最后更新: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} • 请求ID: {random.randint(1000,9999)}</p>
         </div>
     </body>
     </html>
@@ -370,12 +359,12 @@ async def health_check(request):
             "service": "api-gateway",
             "timestamp": datetime.datetime.now().isoformat(),
             "version": "1.0",
-            "requests": request_counter
+            "requests": request_counter,
+            "uptime": int(time.time() - start_time)
         })
     elif path == '/api/stats':
-        uptime = int(time.time() - start_time)
         return web.json_response({
-            "uptime": uptime,
+            "uptime": int(time.time() - start_time),
             "requests": request_counter,
             "active_connections": random.randint(50, 200),
             "memory_usage": random.randint(40, 75),
@@ -393,28 +382,25 @@ async def health_check(request):
     html_content = generate_simulated_page()
     return web.Response(text=html_content, content_type='text/html')
 
-async def koyeb_proxy_keep_alive():
-    """通过Koyeb代理端口的保活（关键修复）"""
+async def direct_port_keep_alive():
+    """直接端口保活 - 修复版本"""
     try:
-        # 直接通过Koyeb代理端口访问
-        url = f'http://127.0.0.1:{CONFIG["port"]}/'
+        # 关键修复：使用Python服务的端口(8000)，而不是Xray端口(20018)
+        url = f'http://127.0.0.1:{CONFIG["internal_port"]}/health'
         
         async with aiohttp.ClientSession() as session:
-            headers = {
-                'User-Agent': random.choice(CONFIG['user_agents']),
-                'Host': CONFIG['domain']  # 设置Host头，模拟真实访问
-            }
-            async with session.get(url, headers=headers, timeout=8) as resp:
-                log_message(f"🔑 代理保活成功: {resp.status} (端口{CONFIG['port']})")
+            headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
+            async with session.get(url, headers=headers, timeout=5) as resp:
+                log_message(f"🔧 端口保活成功: {resp.status} (端口{CONFIG['internal_port']})")
                 return True
     except Exception as e:
-        log_message(f"❌ 代理保活失败: {str(e)}")
+        log_message(f"⚠️ 端口保活失败: {str(e)[:50]}")
         return False
 
 async def external_domain_keep_alive():
     """通过公网域名的保活"""
     try:
-        paths = ['/', '/health', '/api/health', '/api/stats', '/api/version']
+        paths = ['/', '/health', '/status', '/api/health', '/api/stats']
         path = random.choice(paths)
         url = f'https://{CONFIG["domain"]}{path}'
         
@@ -423,10 +409,9 @@ async def external_domain_keep_alive():
             async with session.get(url, headers=headers, timeout=10) as resp:
                 status_info = f"{resp.status}"
                 if path.startswith('/api'):
-                    # 如果是API调用，记录响应内容摘要
                     try:
                         data = await resp.json()
-                        status_info = f"{resp.status} {str(data)[:50]}..."
+                        status_info = f"{resp.status} {str(data)[:30]}..."
                     except:
                         pass
                 log_message(f"🌐 域名保活: {status_info} {path}")
@@ -441,7 +426,7 @@ async def internal_keep_alive():
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 f'http://127.0.0.1:{CONFIG["internal_port"]}/health',
-                timeout=5
+                timeout=3
             ) as resp:
                 log_message("💚 内部健康检查成功")
                 return True
@@ -449,37 +434,37 @@ async def internal_keep_alive():
         log_message(f"⚠️ 内部检查失败: {str(e)[:30]}")
         return False
 
-async def aggressive_keep_alive():
-    """激进保活策略 - 确保Koyeb检测到流量"""
+async def smart_keep_alive():
+    """智能保活策略 - 修复版本"""
     cycle_count = 0
     
-    # 等待Xray服务完全启动（重要！）
-    await asyncio.sleep(15)
-    log_message("🚀 开始激进保活策略")
+    # 等待服务完全启动
+    await asyncio.sleep(10)
+    log_message("🚀 开始智能保活策略")
     
     while True:
         try:
-            # 1. 内部健康检查（基础）
+            # 1. 内部健康检查（每次执行）
             await internal_keep_alive()
             
-            # 2. Koyeb代理保活（关键！每2次循环执行一次）
+            # 2. 直接端口保活（高频，每2次循环）
             if cycle_count % 2 == 0:
-                await koyeb_proxy_keep_alive()
+                await direct_port_keep_alive()
             
-            # 3. 外部保活（每3次循环执行一次）  
+            # 3. 外部域名保活（中频，每3次循环）
             if cycle_count % 3 == 0:
                 await external_domain_keep_alive()
             
-            # 更短的间隔：5-8秒
-            sleep_time = random.randint(5, 8)
-            log_message(f"⏰ 等待 {sleep_time}秒")
+            # 动态间隔：6-9秒
+            sleep_time = random.randint(6, 9)
+            log_message(f"⏰ 下次保活: {sleep_time}秒后")
             await asyncio.sleep(sleep_time)
             
             cycle_count += 1
             
         except Exception as e:
             log_message(f"💥 保活异常: {str(e)[:30]}")
-            await asyncio.sleep(10)
+            await asyncio.sleep(8)
 
 def create_app():
     app = web.Application()
@@ -493,9 +478,9 @@ def create_app():
     return app
 
 async def start_background_tasks(app):
-    # 延迟启动保活任务，确保Xray先启动
-    await asyncio.sleep(10)
-    app['keep_alive'] = asyncio.create_task(aggressive_keep_alive())
+    # 延迟启动保活任务
+    await asyncio.sleep(8)
+    app['keep_alive'] = asyncio.create_task(smart_keep_alive())
 
 async def cleanup_background_tasks(app):
     if 'keep_alive' in app:
@@ -503,14 +488,14 @@ async def cleanup_background_tasks(app):
         try:
             await app['keep_alive']
         except asyncio.CancelledError:
-            log_message("保活任务已停止")
+            log_message("保活任务已安全停止")
 
 if __name__ == "__main__":
-    log_message("🚀 启动激进防休眠服务")
+    log_message("🚀 启动智能防休眠服务")
     log_message("🎯 目标: 确保Koyeb检测到流量")
-    log_message("⏱️ 保活间隔: 5-8秒")
-    log_message("🔑 关键: 通过代理端口保活")
-    log_message("🎨 仿真页面: 已启用三种精美模板")
+    log_message("⏱️ 保活间隔: 6-9秒")
+    log_message("🔧 关键修复: 使用正确端口保活")
+    log_message("🎨 仿真页面: 三种精美模板已启用")
     
     app = create_app()
     app.on_startup.append(start_background_tasks)
