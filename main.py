@@ -36,35 +36,12 @@ def generate_normal_website():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>技术笔记 | 个人博客</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        .post {
-            margin-bottom: 30px;
-        }
-        .date {
-            color: #666;
-            font-size: 0.9em;
-        }
-        .content {
-            line-height: 1.6;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .post { margin-bottom: 30px; }
+        .date { color: #666; font-size: 0.9em; }
+        .content { line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -90,7 +67,7 @@ def generate_normal_website():
 </body>
 </html>""",
         
-        # 服务状态页面
+        # 服务状态页面样式
         """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -98,46 +75,14 @@ def generate_normal_website():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统状态监控</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .status-card {
-            background: rgba(255,255,255,0.2);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .label {
-            flex: 1;
-            font-weight: bold;
-        }
-        .value {
-            flex: 2;
-        }
-        .online {
-            color: #4CAF50;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .container { max-width: 600px; margin: 50px auto; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px); }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .status-card { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .status-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .label { flex: 1; font-weight: bold; }
+        .value { flex: 2; }
+        .online { color: #4CAF50; }
     </style>
 </head>
 <body>
@@ -162,7 +107,7 @@ def generate_normal_website():
 </body>
 </html>""",
         
-        # API文档
+        # API文档样式
         """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -170,44 +115,13 @@ def generate_normal_website():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API 文档中心</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #1a1a1a;
-            color: #e0e0e0;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        h1 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        .api-section {
-            background: #2d2d2d;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .method {
-            display: inline-block;
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        .endpoint {
-            font-family: monospace;
-            color: #bb86fc;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #1a1a1a; color: #e0e0e0; }
+        .container { max-width: 700px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { color: #fff; margin-bottom: 10px; }
+        .api-section { background: #2d2d2d; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .method { display: inline-block; background: #4CAF50; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+        .endpoint { font-family: monospace; color: #bb86fc; }
     </style>
 </head>
 <body>
@@ -239,19 +153,22 @@ def generate_normal_website():
 
 async def health_check(request):
     """健康检查端点"""
-    if request.path in ['/health', '/status']:
+    if request.path == '/health' or request.path == '/status':
+        # 内部健康检查返回JSON
         return web.json_response({
             "status": "healthy",
-            "service": "xray-proxy",
+            "service": "api-gateway",
             "timestamp": datetime.now().isoformat(),
             "version": "1.0",
             "requests_served": random.randint(100, 1000)
         })
     else:
-        return web.Response(text=generate_normal_website(), content_type='text/html')
+        # 根路径返回正常网页
+        html_content = generate_normal_website()
+        return web.Response(text=html_content, content_type='text/html')
 
 async def internal_keep_alive():
-    """内部保活"""
+    """内部保活：访问本地健康检查接口"""
     try:
         async with aiohttp.ClientSession() as session:
             headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
@@ -260,14 +177,14 @@ async def internal_keep_alive():
                 headers=headers,
                 timeout=5
             ) as resp:
-                print(f"内部保活成功: {resp.status}")
+                print(f"内部保活成功 - 状态: {resp.status}")
                 return True
     except Exception as e:
         print(f"内部保活失败: {str(e)[:50]}")
         return False
 
 async def external_keep_alive():
-    """外部保活"""
+    """外部保活：通过公网域名访问服务"""
     try:
         paths = ['/', '/status', '/health', '/api/v1/info']
         path = random.choice(paths)
@@ -280,35 +197,34 @@ async def external_keep_alive():
                 headers=headers,
                 timeout=10
             ) as resp:
-                print(f"外部保活: {resp.status} {path}")
+                print(f"外部保活流量产生 - 状态: {resp.status} {path}")
                 return True
     except Exception as e:
-        print(f"外部保活错误: {str(e)[:50]}")
+        print(f"外部保活尝试: {str(e)[:50]}")
         return True
 
 async def keep_alive_task():
     """保活任务主循环"""
     while True:
         try:
-            # 随机选择保活类型
-            action = random.choice(['internal', 'external', 'both'])
+            # 并行执行内部和外部保活
+            internal_task = asyncio.create_task(internal_keep_alive())
+            external_task = asyncio.create_task(external_keep_alive())
             
-            if action in ['internal', 'both']:
-                await internal_keep_alive()
-                
-            if action in ['external', 'both']:
-                await external_keep_alive()
+            # 等待两个任务都完成
+            await asyncio.gather(internal_task, external_task, return_exceptions=True)
             
-            # 更短的间隔：15-25秒
-            sleep_time = random.randint(15, 25)
-            print(f"等待 {sleep_time}秒")
+            # 动态间隔20-30秒
+            sleep_time = random.randint(20, 30)
+            print(f"保活成功，等待 {sleep_time} 秒后下次检查...")
             await asyncio.sleep(sleep_time)
             
         except Exception as e:
-            print(f"保活异常: {str(e)[:50]}")
-            await asyncio.sleep(20)
+            print(f"保活任务异常: {str(e)[:50]}")
+            await asyncio.sleep(25)
 
 def create_app():
+    """创建Web应用"""
     app = web.Application()
     app.router.add_get('/', health_check)
     app.router.add_get('/health', health_check)
@@ -317,20 +233,24 @@ def create_app():
     return app
 
 async def start_background_tasks(app):
+    """启动后台任务"""
     app['keep_alive'] = asyncio.create_task(keep_alive_task())
 
 async def cleanup_background_tasks(app):
+    """清理后台任务"""
     if 'keep_alive' in app:
         app['keep_alive'].cancel()
         try:
             await app['keep_alive']
         except asyncio.CancelledError:
-            print("保活任务已退出")
+            print("保活任务已安全退出。")
 
 if __name__ == "__main__":
     print("启动防休眠服务...")
-    print(f"地址: {CONFIG['domain']}")
-    print(f"端口: {CONFIG['port']}")
+    print(f"服务地址: {CONFIG['domain']}")
+    print(f"服务端口: {CONFIG['port']}")
+    print("保活机制: 已启用 (动态间隔20-30秒)")
+    print("网页伪装: 已启用")
     
     app = create_app()
     app.on_startup.append(start_background_tasks)
