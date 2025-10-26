@@ -1,6 +1,5 @@
 FROM alpine:3.18
 
-# 安装系统依赖
 RUN apk update && apk add --no-cache \
     python3 \
     py3-pip \
@@ -9,10 +8,8 @@ RUN apk update && apk add --no-cache \
     ca-certificates \
     tzdata
 
-# 安装Python依赖
 RUN pip3 install --no-cache-dir aiohttp==3.9.0
 
-# 下载并安装Xray
 RUN cd /tmp && \
     curl -L -o xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip && \
     unzip xray.zip && \
@@ -22,25 +19,16 @@ RUN cd /tmp && \
     mv geoip.dat geosite.dat /usr/local/share/xray/ && \
     rm -f xray.zip
 
-# 创建配置目录
-RUN mkdir -p /etc/xray/
-
 WORKDIR /app
 
-# 复制所有文件
 COPY . .
 
-# 关键修复：确保配置文件被复制到正确位置
-RUN cp config.json /etc/xray/config.json && \
-    chmod 644 /etc/xray/config.json
+RUN mkdir -p /etc/xray/ && \
+    cp config.json /etc/xray/config.json && \
+    chmod +x start.sh
 
-# 设置文件权限
-RUN chmod +x start.sh
-
-# 暴露端口
 EXPOSE 20018 8000
 
-# 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
