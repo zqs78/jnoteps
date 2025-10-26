@@ -10,7 +10,8 @@
         "clients": [
           {
             "id": "258751a7-eb14-47dc-8d18-511c3472220f",
-            "flow": ""
+            "flow": "",
+            "alterId": 0
           }
         ],
         "decryption": "none"
@@ -19,7 +20,10 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/"
+          "path": "/webapi",
+          "headers": {
+            "Host": "01.proxy.koyeb.app"
+          }
         }
       }
     }
@@ -27,7 +31,33 @@
   "outbounds": [
     {
       "protocol": "freedom",
-      "settings": {}
+      "settings": {},
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "settings": {},
+      "tag": "block"
     }
-  ]
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private",
+          "geoip:cn"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct"
+      }
+    ]
+  }
 }
