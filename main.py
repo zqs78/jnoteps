@@ -8,6 +8,11 @@ import time
 import datetime
 import urllib.parse
 
+# 强制刷新输出缓冲区 - 增强版
+sys.stdout = open(1, 'w', buffering=1)
+sys.stderr = open(2, 'w', buffering=1)
+
+# 立即刷新所有缓冲区
 sys.stdout.flush()
 sys.stderr.flush()
 
@@ -25,7 +30,14 @@ CONFIG = {
     ]
 }
 
+def log_message(message):
+    """增强的日志函数，确保日志立即输出"""
+    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+    full_message = f"[{timestamp}] {message}"
+    print(full_message, flush=True)  # 强制立即刷新
+
 async def health_check(request):
+    """健康检查端点"""
     if request.path == '/health' or request.path == '/status':
         return web.json_response({
             "status": "healthy",
@@ -38,23 +50,21 @@ async def health_check(request):
         return web.Response(text=html_content, content_type='text/html')
 
 async def internal_keep_alive():
-    """高频内部保活 - 每10秒一次"""
+    """高频内部保活"""
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 f'http://localhost:{CONFIG["internal_port"]}/health',
                 timeout=3
             ) as resp:
-                current_time = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"[{current_time}] 🔄 内部保活: {resp.status}")
+                log_message("🔄 内部保活成功")
                 return True
     except Exception as e:
-        current_time = datetime.datetime.now().strftime('%H:%M:%S')
-        print(f"[{current_time}] ❌ 内部保活失败: {str(e)[:30]}")
+        log_message(f"❌ 内部保活失败: {str(e)[:30]}")
         return False
 
 async def external_keep_alive():
-    """高频外部保活 - 每30秒一次"""
+    """高频外部保活"""
     try:
         paths = ['/', '/health', '/status']
         path = random.choice(paths)
@@ -63,20 +73,18 @@ async def external_keep_alive():
         async with aiohttp.ClientSession() as session:
             headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
             async with session.get(url, headers=headers, timeout=8) as resp:
-                current_time = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"[{current_time}] 🌐 外部流量: {resp.status} {path}")
+                log_message(f"🌐 外部流量: {resp.status} {path}")
                 return True
     except Exception as e:
-        current_time = datetime.datetime.now().strftime('%H:%M:%S')
-        print(f"[{current_time}] ⚠️ 外部保活: {str(e)[:30]}")
+        log_message(f"⚠️ 外部保活: {str(e)[:30]}")
         return True
 
 async def keep_alive_task():
-    """超高频保活任务 - 确保300秒内持续有流量"""
+    """超高频保活任务"""
     cycle_count = 0
     while True:
         try:
-            # 每次循环都执行内部保活
+            # 内部保活
             await internal_keep_alive()
             
             # 每3次循环执行一次外部保活
@@ -85,15 +93,13 @@ async def keep_alive_task():
             
             # 极短间隔：8-12秒
             sleep_time = random.randint(8, 12)
-            current_time = datetime.datetime.now().strftime('%H:%M:%S')
-            print(f"[{current_time}] 💤 等待 {sleep_time}秒")
+            log_message(f"💤 等待 {sleep_time}秒")
             await asyncio.sleep(sleep_time)
             
             cycle_count += 1
             
         except Exception as e:
-            current_time = datetime.datetime.now().strftime('%H:%M:%S')
-            print(f"[{current_time}] 💥 保活异常: {str(e)[:30]}")
+            log_message(f"💥 保活异常: {str(e)[:30]}")
             await asyncio.sleep(10)
 
 def create_app():
@@ -112,12 +118,12 @@ async def cleanup_background_tasks(app):
         try:
             await app['keep_alive']
         except asyncio.CancelledError:
-            print("保活任务已停止")
+            log_message("保活任务已停止")
 
 if __name__ == "__main__":
-    print("🚀 启动超高频防休眠服务")
-    print("📊 保活间隔: 8-12秒")
-    print("⏰ 外部流量: 每24-36秒一次")
+    log_message("🚀 启动超高频防休眠服务")
+    log_message("📊 保活间隔: 8-12秒")
+    log_message("⏰ 外部流量: 每24-36秒一次")
     
     app = create_app()
     app.on_startup.append(start_background_tasks)
