@@ -9,11 +9,9 @@ import datetime
 import urllib.parse
 import json
 
-# 强制刷新输出缓冲区 - 增强版
+# 强制刷新输出缓冲区
 sys.stdout = open(1, 'w', buffering=1)
 sys.stderr = open(2, 'w', buffering=1)
-
-# 立即刷新所有缓冲区
 sys.stdout.flush()
 sys.stderr.flush()
 
@@ -150,10 +148,10 @@ SIMULATED_PAGES = [
 request_counter = 0
 
 def log_message(message):
-    """增强的日志函数，确保日志立即输出"""
+    """增强的日志函数"""
     timestamp = datetime.datetime.now().strftime('%H:%M:%S')
     full_message = f"[{timestamp}] {message}"
-    print(full_message, flush=True)  # 强制立即刷新
+    print(full_message, flush=True)
 
 def generate_simulated_page():
     """生成仿真页面"""
@@ -228,30 +226,33 @@ async def health_check(request):
     html_content = generate_simulated_page()
     return web.Response(text=html_content, content_type='text/html')
 
-async def internal_keep_alive():
-    """高频内部保活"""
+async def koyeb_detectable_keep_alive():
+    """Koyeb可检测的外部保活 - 通过代理端口"""
     try:
+        # 使用Koyeb代理端口(20018)进行保活
+        url = f'http://localhost:{CONFIG["port"]}/health'
+        
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f'http://localhost:{CONFIG["internal_port"]}/health',
-                timeout=3
-            ) as resp:
-                log_message("内部保活成功")
+            headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
+            async with session.get(url, headers=headers, timeout=5) as resp:
+                log_message(f"端口保活: {resp.status} (端口{CONFIG['port']})")
                 return True
     except Exception as e:
-        log_message(f"内部保活失败: {str(e)[:30]}")
+        log_message(f"端口保活失败: {str(e)[:30]}")
         return False
 
-async def external_keep_alive():
-    """高频外部保活"""
+async def external_domain_keep_alive():
+    """通过公网域名的保活"""
     try:
-        # 随机选择路径，增加多样性
         paths = ['/', '/health', '/status', '/api/health', '/api/stats']
         path = random.choice(paths)
         url = f'https://{CONFIG["domain"]}{path}'
         
         async with aiohttp.ClientSession() as session:
-            headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
+            headers = {
+                'User-Agent': random.choice(CONFIG['user_agents']),
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
             async with session.get(url, headers=headers, timeout=8) as resp:
                 status_info = f"{resp.status}"
                 if path.startswith('/api'):
@@ -261,34 +262,52 @@ async def external_keep_alive():
                         status_info = f"{resp.status} {str(data)[:50]}..."
                     except:
                         pass
-                log_message(f"外部流量: {status_info} {path}")
+                log_message(f"域名保活: {status_info} {path}")
                 return True
     except Exception as e:
-        log_message(f"外部保活: {str(e)[:30]}")
+        log_message(f"域名保活: {str(e)[:30]}")
         return True
 
-async def keep_alive_task():
-    """超高频保活任务"""
+async def internal_keep_alive():
+    """内部健康检查"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f'http://localhost:{CONFIG["internal_port"]}/health',
+                timeout=3
+            ) as resp:
+                log_message("内部健康检查成功")
+                return True
+    except Exception as e:
+        log_message(f"内部健康检查失败: {str(e)[:30]}")
+        return False
+
+async def enhanced_keep_alive_cycle():
+    """增强型保活循环 - 三重保障"""
     cycle_count = 0
     while True:
         try:
-            # 内部保活
+            # 1. 内部健康检查（每次循环）
             await internal_keep_alive()
             
-            # 每3次循环执行一次外部保活
-            if cycle_count % 3 == 0:
-                await external_keep_alive()
+            # 2. Koyeb端口保活（高频，每2次循环）
+            if cycle_count % 2 == 0:
+                await koyeb_detectable_keep_alive()
             
-            # 极短间隔：8-12秒
-            sleep_time = random.randint(8, 12)
-            log_message(f"等待 {sleep_time}秒")
+            # 3. 公网域名保活（中频，每4次循环）
+            if cycle_count % 4 == 0:
+                await external_domain_keep_alive()
+            
+            # 动态间隔：6-10秒（更高频）
+            sleep_time = random.randint(6, 10)
+            log_message(f"下次保活: {sleep_time}秒后")
             await asyncio.sleep(sleep_time)
             
             cycle_count += 1
             
         except Exception as e:
             log_message(f"保活异常: {str(e)[:30]}")
-            await asyncio.sleep(10)
+            await asyncio.sleep(8)
 
 def create_app():
     app = web.Application()
@@ -301,7 +320,7 @@ def create_app():
     return app
 
 async def start_background_tasks(app):
-    app['keep_alive'] = asyncio.create_task(keep_alive_task())
+    app['keep_alive'] = asyncio.create_task(enhanced_keep_alive_cycle())
 
 async def cleanup_background_tasks(app):
     if 'keep_alive' in app:
@@ -309,15 +328,16 @@ async def cleanup_background_tasks(app):
         try:
             await app['keep_alive']
         except asyncio.CancelledError:
-            log_message("保活任务已停止")
+            log_message("保活任务已安全停止")
 
 # 记录启动时间
 start_time = time.time()
 
 if __name__ == "__main__":
-    log_message("启动超高频防休眠服务")
-    log_message("保活间隔: 8-12秒")
-    log_message("外部流量: 每24-36秒一次")
+    log_message("启动三重保障防休眠服务")
+    log_message("保活间隔: 6-10秒")
+    log_message("端口保活: 每12-20秒")
+    log_message("域名保活: 每24-40秒")
     log_message("仿真页面: 已启用多种页面类型")
     
     app = create_app()
