@@ -20,10 +20,8 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/webapi",
-          "headers": {
-            "Host": "01.proxy.koyeb.app"
-          }
+          "path": "/",
+          "headers": {}
         }
       }
     }
@@ -33,23 +31,6 @@
       "protocol": "freedom",
       "settings": {},
       "tag": "direct"
-    },
-    {
-      "protocol": "blackhole",
-      "settings": {},
-      "tag": "blocked"
     }
-  ],
-  "routing": {
-    "domainStrategy": "IPIfNonMatch",
-    "rules": [
-      {
-        "type": "field",
-        "ip": [
-          "geoip:private"
-        ],
-        "outboundTag": "direct"
-      }
-    ]
-  }
+  ]
 }
