@@ -8,6 +8,7 @@ import time
 import datetime
 import urllib.parse
 import json
+import ssl
 
 # 强制刷新输出缓冲区
 sys.stdout = open(1, 'w', buffering=1)
@@ -16,8 +17,8 @@ sys.stdout.flush()
 sys.stderr.flush()
 
 CONFIG = {
-    "domain": "select-buzzard-getnode-c0cddf87.koyeb.app",  # 修改为公网域名
-    "port": "443",  # 公网域名使用HTTPS标准端口
+    "domain": "select-buzzard-getnode-c0cddf87.koyeb.app",
+    "port": "443",
     "uuid": "258751a7-eb14-47dc-8d18-511c3472220f",
     "internal_port": 8000,
     "user_agents": [
@@ -32,6 +33,9 @@ CONFIG = {
 # 全局变量
 request_counter = 0
 start_time = time.time()
+domain_accessible = False
+domain_fail_count = 0
+last_successful_domain_check = 0
 
 def log_message(message):
     """增强的日志函数"""
@@ -39,7 +43,7 @@ def log_message(message):
     full_message = f"[{timestamp}] {message}"
     print(full_message, flush=True)
 
-# 三种精美的仿真页面模板（完整保留，这是您代码的核心部分）
+# 三种精美的仿真页面模板（完整保留）
 SIMULATED_PAGES = [
     {
         "title": "服务状态监控中心",
@@ -257,25 +261,21 @@ SIMULATED_PAGES = [
 ]
 
 def generate_simulated_page():
-    """生成精美的仿真页面（完整保留您原有的生成逻辑）"""
+    """生成精美的仿真页面"""
     global request_counter
     request_counter += 1
     
-    # 选择随机页面模板
     page_template = random.choice(SIMULATED_PAGES)
     
-    # 计算运行时间
     uptime_seconds = int(time.time() - start_time)
     hours = uptime_seconds // 3600
     minutes = (uptime_seconds % 3600) // 60
     uptime_str = f"{hours}小时{minutes}分钟"
     
-    # 生成随机指标
     cpu_usage = random.randint(15, 45)
     memory_usage = random.randint(40, 75)
     network_usage = random.randint(20, 60)
     
-    # 替换模板中的变量
     content = page_template["content"].format(
         timestamp=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         requests=request_counter,
@@ -285,7 +285,6 @@ def generate_simulated_page():
         network=network_usage
     )
     
-    # 构建完整HTML
     html = f"""
     <!DOCTYPE html>
     <html lang="zh-CN">
@@ -349,13 +348,12 @@ def generate_simulated_page():
     return html
 
 async def health_check(request):
-    """健康检查端点，返回仿真页面（完整保留您原有的逻辑）"""
+    """健康检查端点"""
     global request_counter
     request_counter += 1
     
     path = request.path
     
-    # API端点返回JSON
     if path == '/api/health':
         return web.json_response({
             "status": "healthy",
@@ -363,7 +361,10 @@ async def health_check(request):
             "timestamp": datetime.datetime.now().isoformat(),
             "version": "1.0",
             "requests": request_counter,
-            "uptime": int(time.time() - start_time)
+            "uptime": int(time.time() - start_time),
+            "domain_accessible": domain_accessible,
+            "domain_fail_count": domain_fail_count,
+            "last_successful_check": last_successful_domain_check
         })
     elif path == '/api/stats':
         return web.json_response({
@@ -371,7 +372,9 @@ async def health_check(request):
             "requests": request_counter,
             "active_connections": random.randint(50, 200),
             "memory_usage": random.randint(40, 75),
-            "cpu_usage": random.randint(15, 45)
+            "cpu_usage": random.randint(15, 45),
+            "domain_status": "accessible" if domain_accessible else "unreachable",
+            "fail_count": domain_fail_count
         })
     elif path == '/api/version':
         return web.json_response({
@@ -380,8 +383,6 @@ async def health_check(request):
             "build": "b69a376",
             "timestamp": datetime.datetime.now().isoformat()
         })
-    
-    # 新增：专用保活端点 /ping
     elif path == '/ping':
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         uptime_seconds = int(time.time() - start_time)
@@ -392,6 +393,8 @@ async def health_check(request):
             "timestamp": current_time,
             "uptime_seconds": uptime_seconds,
             "requests_handled": request_counter,
+            "domain_accessible": domain_accessible,
+            "domain_fail_count": domain_fail_count,
             "ping_id": random.randint(1000, 9999),
             "message": "✅ Service is active and responsive"
         }
@@ -399,13 +402,11 @@ async def health_check(request):
         log_message(f"🏓 保活端点被访问 - Ping ID: {response_data['ping_id']}")
         return web.json_response(response_data)
     
-    # 其他路径返回仿真HTML页面
     html_content = generate_simulated_page()
     return web.Response(text=html_content, content_type='text/html')
 
-# 以下是您原有的所有保活函数，完整保留
 async def direct_port_keep_alive():
-    """直接端口保活 - 修复版本"""
+    """直接端口保活"""
     try:
         url = f'http://127.0.0.1:{CONFIG["internal_port"]}/health'
         async with aiohttp.ClientSession() as session:
@@ -418,15 +419,25 @@ async def direct_port_keep_alive():
         return False
 
 async def external_domain_keep_alive():
-    """通过公网域名的保活"""
+    """通过公网域名的保活 - 增强版本"""
+    global domain_accessible, domain_fail_count, last_successful_domain_check
+    
     try:
         paths = ['/', '/health', '/status', '/api/health', '/api/stats', '/ping']
         path = random.choice(paths)
         url = f'https://{CONFIG["domain"]}{path}'
         
-        async with aiohttp.ClientSession() as session:
-            headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
-            async with session.get(url, headers=headers, timeout=10) as resp:
+        # 创建忽略SSL验证的连接器
+        connector = aiohttp.TCPConnector(ssl=False)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
+            headers = {
+                'User-Agent': random.choice(CONFIG['user_agents']),
+                'Accept': 'application/json,text/html',
+                'Cache-Control': 'no-cache'
+            }
+            
+            async with session.get(url, headers=headers, timeout=15) as resp:
                 status_info = f"{resp.status}"
                 if path.startswith('/api') or path == '/ping':
                     try:
@@ -434,11 +445,29 @@ async def external_domain_keep_alive():
                         status_info = f"{resp.status} {str(data)[:30]}..."
                     except:
                         pass
-                log_message(f"🌐 域名保活: {status_info} {path}")
+                
+                log_message(f"🌐 域名保活成功: {status_info} {path}")
+                domain_accessible = True
+                last_successful_domain_check = time.time()
+                if domain_fail_count > 0:
+                    domain_fail_count = 0
                 return True
+                
+    except asyncio.TimeoutError:
+        domain_fail_count += 1
+        log_message(f"⏰ 域名保活超时 (失败次数: {domain_fail_count})")
+        domain_accessible = False
+        return False
+    except aiohttp.ClientConnectorError as e:
+        domain_fail_count += 1
+        log_message(f"🔌 域名连接错误: {str(e)[:50]} (失败次数: {domain_fail_count})")
+        domain_accessible = False
+        return False
     except Exception as e:
-        log_message(f"⚠️ 域名保活失败: {str(e)[:50]}")
-        return True
+        domain_fail_count += 1
+        log_message(f"⚠️ 域名保活异常: {str(e)[:50]} (失败次数: {domain_fail_count})")
+        domain_accessible = False
+        return False
 
 async def internal_keep_alive():
     """内部健康检查"""
@@ -455,7 +484,7 @@ async def internal_keep_alive():
         return False
 
 async def smart_keep_alive():
-    """智能保活策略 - 修复版本"""
+    """智能保活策略 - 优化版本"""
     cycle_count = 0
     
     # 等待服务完全启动
@@ -464,20 +493,32 @@ async def smart_keep_alive():
     
     while True:
         try:
-            # 1. 内部健康检查（每次执行）
+            # 1. 内部健康检查（最高优先级，每次执行）
             await internal_keep_alive()
             
-            # 2. 直接端口保活（高频，每2次循环）
+            # 2. 直接端口保活（高频）
             if cycle_count % 2 == 0:
                 await direct_port_keep_alive()
             
-            # 3. 外部域名保活（中频，每3次循环）
-            if cycle_count % 3 == 0:
+            # 3. 外部域名保活（智能调整频率）
+            domain_check_interval = 3  # 默认每3次循环检查一次
+            
+            # 如果连续失败，减少检查频率
+            if domain_fail_count > 5:
+                domain_check_interval = 6
+            elif domain_fail_count > 10:
+                domain_check_interval = 10
+                
+            if cycle_count % domain_check_interval == 0:
                 await external_domain_keep_alive()
             
-            # 动态间隔：6-9秒
-            sleep_time = random.randint(6, 9)
-            log_message(f"⏰ 下次保活: {sleep_time}秒后")
+            # 动态调整间隔
+            base_interval = 6
+            if domain_fail_count > 0:
+                base_interval = min(12, base_interval + domain_fail_count // 2)
+            
+            sleep_time = random.randint(base_interval, base_interval + 3)
+            log_message(f"⏰ 下次保活: {sleep_time}秒后 (失败次数: {domain_fail_count})")
             await asyncio.sleep(sleep_time)
             
             cycle_count += 1
@@ -488,14 +529,14 @@ async def smart_keep_alive():
 
 def create_app():
     app = web.Application()
-    # 注册所有路由（包括新增的/ping端点）
+    # 注册所有路由
     app.router.add_get('/', health_check)
     app.router.add_get('/health', health_check)
     app.router.add_get('/status', health_check)
     app.router.add_get('/api/health', health_check)
     app.router.add_get('/api/stats', health_check)
     app.router.add_get('/api/version', health_check)
-    app.router.add_get('/ping', health_check)  # 新增保活端点
+    app.router.add_get('/ping', health_check)
     return app
 
 async def start_background_tasks(app):
@@ -514,11 +555,12 @@ async def cleanup_background_tasks(app):
 if __name__ == "__main__":
     log_message("🚀 启动智能防休眠服务")
     log_message("🎯 目标: 确保Koyeb检测到流量")
-    log_message("⏱️ 保活间隔: 6-9秒")
-    log_message("🔧 关键修复: 使用正确域名和端口")
+    log_message("⏱️ 保活间隔: 动态调整")
+    log_message("🔧 关键修复: 增强域名保活稳定性")
     log_message("🌐 公网域名: select-buzzard-getnode-c0cddf87.koyeb.app")
     log_message("🎨 仿真页面: 三种精美模板已启用")
     log_message("🏓 新增: 专用保活端点 /ping")
+    log_message("🛡️ 增强: SSL验证忽略和智能重试机制")
     
     app = create_app()
     app.on_startup.append(start_background_tasks)
