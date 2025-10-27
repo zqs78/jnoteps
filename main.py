@@ -17,7 +17,7 @@ sys.stderr.flush()
 
 CONFIG = {
     "domain": "01.proxy.koyeb.app",
-    "port": "20018",  # Koyeb代理端口
+    "port": "20018",
     "uuid": "258751a7-eb14-47dc-8d18-511c3472220f",
     "internal_port": 8000,
     "user_agents": [
@@ -39,7 +39,7 @@ def log_message(message):
     full_message = f"[{timestamp}] {message}"
     print(full_message, flush=True)
 
-# 三种精美的仿真页面模板
+# 三种精美的仿真页面模板（完整保留，这是您代码的核心部分）
 SIMULATED_PAGES = [
     {
         "title": "服务状态监控中心",
@@ -257,7 +257,7 @@ SIMULATED_PAGES = [
 ]
 
 def generate_simulated_page():
-    """生成精美的仿真页面"""
+    """生成精美的仿真页面（完整保留您原有的生成逻辑）"""
     global request_counter
     request_counter += 1
     
@@ -349,7 +349,10 @@ def generate_simulated_page():
     return html
 
 async def health_check(request):
-    """健康检查端点，返回仿真页面"""
+    """健康检查端点，返回仿真页面（完整保留您原有的逻辑）"""
+    global request_counter
+    request_counter += 1
+    
     path = request.path
     
     # API端点返回JSON
@@ -378,16 +381,33 @@ async def health_check(request):
             "timestamp": datetime.datetime.now().isoformat()
         })
     
+    # 新增：专用保活端点 /ping
+    elif path == '/ping':
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        uptime_seconds = int(time.time() - start_time)
+        
+        response_data = {
+            "status": "alive",
+            "service": "Koyeb Proxy Service",
+            "timestamp": current_time,
+            "uptime_seconds": uptime_seconds,
+            "requests_handled": request_counter,
+            "ping_id": random.randint(1000, 9999),
+            "message": "✅ Service is active and responsive"
+        }
+        
+        log_message(f"🏓 保活端点被访问 - Ping ID: {response_data['ping_id']}")
+        return web.json_response(response_data)
+    
     # 其他路径返回仿真HTML页面
     html_content = generate_simulated_page()
     return web.Response(text=html_content, content_type='text/html')
 
+# 以下是您原有的所有保活函数，完整保留
 async def direct_port_keep_alive():
     """直接端口保活 - 修复版本"""
     try:
-        # 关键修复：使用Python服务的端口(8000)，而不是Xray端口(20018)
         url = f'http://127.0.0.1:{CONFIG["internal_port"]}/health'
-        
         async with aiohttp.ClientSession() as session:
             headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
             async with session.get(url, headers=headers, timeout=5) as resp:
@@ -400,7 +420,7 @@ async def direct_port_keep_alive():
 async def external_domain_keep_alive():
     """通过公网域名的保活"""
     try:
-        paths = ['/', '/health', '/status', '/api/health', '/api/stats']
+        paths = ['/', '/health', '/status', '/api/health', '/api/stats', '/ping']
         path = random.choice(paths)
         url = f'https://{CONFIG["domain"]}{path}'
         
@@ -408,7 +428,7 @@ async def external_domain_keep_alive():
             headers = {'User-Agent': random.choice(CONFIG['user_agents'])}
             async with session.get(url, headers=headers, timeout=10) as resp:
                 status_info = f"{resp.status}"
-                if path.startswith('/api'):
+                if path.startswith('/api') or path == '/ping':
                     try:
                         data = await resp.json()
                         status_info = f"{resp.status} {str(data)[:30]}..."
@@ -468,13 +488,14 @@ async def smart_keep_alive():
 
 def create_app():
     app = web.Application()
-    # 注册所有路由
+    # 注册所有路由（包括新增的/ping端点）
     app.router.add_get('/', health_check)
     app.router.add_get('/health', health_check)
     app.router.add_get('/status', health_check)
     app.router.add_get('/api/health', health_check)
     app.router.add_get('/api/stats', health_check)
     app.router.add_get('/api/version', health_check)
+    app.router.add_get('/ping', health_check)  # 新增保活端点
     return app
 
 async def start_background_tasks(app):
@@ -496,6 +517,7 @@ if __name__ == "__main__":
     log_message("⏱️ 保活间隔: 6-9秒")
     log_message("🔧 关键修复: 使用正确端口保活")
     log_message("🎨 仿真页面: 三种精美模板已启用")
+    log_message("🏓 新增: 专用保活端点 /ping")
     
     app = create_app()
     app.on_startup.append(start_background_tasks)
