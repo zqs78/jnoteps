@@ -16,8 +16,8 @@ sys.stdout.flush()
 sys.stderr.flush()
 
 CONFIG = {
-    "domain": "01.proxy.koyeb.app",
-    "port": "20018",
+    "domain": "select-buzzard-getnode-c0cddf87.koyeb.app",  # 修改为公网域名
+    "port": "443",  # 公网域名使用HTTPS标准端口
     "uuid": "258751a7-eb14-47dc-8d18-511c3472220f",
     "internal_port": 8000,
     "user_agents": [
@@ -515,7 +515,8 @@ if __name__ == "__main__":
     log_message("🚀 启动智能防休眠服务")
     log_message("🎯 目标: 确保Koyeb检测到流量")
     log_message("⏱️ 保活间隔: 6-9秒")
-    log_message("🔧 关键修复: 使用正确端口保活")
+    log_message("🔧 关键修复: 使用正确域名和端口")
+    log_message("🌐 公网域名: select-buzzard-getnode-c0cddf87.koyeb.app")
     log_message("🎨 仿真页面: 三种精美模板已启用")
     log_message("🏓 新增: 专用保活端点 /ping")
     
